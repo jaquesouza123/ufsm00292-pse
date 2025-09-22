@@ -41,6 +41,9 @@ void tarefa_6(void);
 void tarefa_7(void);
 void tarefa_8(void);
 void tarefa_9(void);
+void tarefa_10_preep(void);
+void tarefa_10_coop(void);
+
 
 /*
  * Configuracao dos tamanhos das pilhas
@@ -54,6 +57,9 @@ void tarefa_9(void);
 #define TAM_PILHA_7			(TAM_MINIMO_PILHA + 24)
 #define TAM_PILHA_8			(TAM_MINIMO_PILHA + 24)
 #define TAM_PILHA_9			(TAM_MINIMO_PILHA + 24)
+#define TAM_PILHA_10		(TAM_MINIMO_PILHA + 24)
+#define TAM_PILHA_10_preep	(TAM_MINIMO_PILHA + 24)
+#define TAM_PILHA_10_coop	(TAM_MINIMO_PILHA + 24)
 #define TAM_PILHA_OCIOSA	(TAM_MINIMO_PILHA + 24)
 
 /*
@@ -67,7 +73,9 @@ uint32_t PILHA_TAREFA_5[TAM_PILHA_5];
 uint32_t PILHA_TAREFA_6[TAM_PILHA_6];
 uint32_t PILHA_TAREFA_7[TAM_PILHA_7];
 uint32_t PILHA_TAREFA_8[TAM_PILHA_8];
-uint32_t PILHA_TAREFA_9[TAM_PILHA_9];        
+uint32_t PILHA_TAREFA_9[TAM_PILHA_9];
+uint32_t PILHA_TAREFA_10_coop[TAM_PILHA_10_coop];
+uint32_t PILHA_TAREFA_10_preep[TAM_PILHA_10_preep];
 uint32_t PILHA_TAREFA_OCIOSA[TAM_PILHA_OCIOSA];
 
 /*
@@ -88,6 +96,9 @@ int main(void)
 	CriaTarefa(tarefa_2, "Tarefa 2", PILHA_TAREFA_2, TAM_PILHA_2, 1);
     
     CriaTarefa(tarefa_9, "Tarefa 9", PILHA_TAREFA_9, TAM_PILHA_9, 9);
+    CriaTarefa(tarefa_10_coop, "Tarefa 10 coop", PILHA_TAREFA_10_coop, TAM_PILHA_10_coop, 10);
+    CriaTarefa(tarefa_10_preep, "Tarefa 10 preep", PILHA_TAREFA_10_preep, TAM_PILHA_10_preep, 11);
+
 	
 	/* Cria tarefa ociosa do sistema */
 	CriaTarefa(tarefa_ociosa,"Tarefa ociosa", PILHA_TAREFA_OCIOSA, TAM_PILHA_OCIOSA, 0);
@@ -270,8 +281,60 @@ void tarefa_9(void)
 
         port_pin_toggle_output_level(LED_0_PIN);
     }
-   
 }
+
+void tarefa_10_coop(void)
+{
+
+	uint8_t a = 1;			/* inicializacoes para a tarefa */
+	uint8_t i = 0;
+	
+	for(;;)
+	{
+		SemaforoAguarda(&SemaforoVazio);
+		
+        REG_ATOMICA_INICIO(); 
+		buffer[i] = a++;
+		i = (i+1)%TAM_BUFFER;
+		REG_ATOMICA_FIM();
+
+		SemaforoLibera(&SemaforoCheio); /* tarefa libera semaforo para tarefa que esta esperando-o */
+		
+		TarefaEspera(100); 	/* tarefa se coloca em espera por 10 marcas de tempo (ticks), equivale a 100ms */		
+	}
+}
+
+
+void tarefa_10_preep(void)
+{
+    uint8_t a = 1;			
+	uint8_t i = 0;
+	 volatile uint32_t contador;
+	for(;;)
+	{
+		SemaforoAguarda(&SemaforoVazio);
+		
+        REG_ATOMICA_INICIO(); 
+		buffer[i] = a++;
+		i = (i+1)%TAM_BUFFER;
+		REG_ATOMICA_FIM();
+        
+        contador = 0;
+        while (contador < 1000000) {       
+            contador++;
+            TrocaContextoDasTarefas();     
+        }
+
+		SemaforoLibera(&SemaforoCheio); 
+		
+		
+	}
+}
+
+
+    
+   
+
 
 
 
