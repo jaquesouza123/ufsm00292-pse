@@ -163,7 +163,7 @@ semaforo_t SemaforoTeste = {0,0}; /* declaracao e inicializacao de um semaforo *
 void tarefa_5(void)
 {
 
-	uint32_t a = 0;			/* inicializacoes para a tarefa */
+	uint32_t a = 0;			
 	
 	for(;;)
 	{
